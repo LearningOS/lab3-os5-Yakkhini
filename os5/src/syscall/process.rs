@@ -1,10 +1,10 @@
 //! Process management syscalls
 
 use crate::loader::get_app_data_by_name;
-use crate::mm::{translated_refmut, translated_str};
+use crate::mm::{translated_refmut, translated_str, self};
 use crate::task::{
     add_task, current_task, current_user_token, exit_current_and_run_next,
-    suspend_current_and_run_next, TaskStatus,
+    suspend_current_and_run_next, TaskStatus, self,
 };
 use crate::timer::get_time_us;
 use alloc::sync::Arc;
@@ -106,14 +106,17 @@ pub fn sys_waitpid(pid: isize, exit_code_ptr: *mut i32) -> isize {
 }
 
 // YOUR JOB: 引入虚地址后重写 sys_get_time
-pub fn sys_get_time(_ts: *mut TimeVal, _tz: usize) -> isize {
+pub fn sys_get_time(ts: *mut TimeVal, _tz: usize) -> isize {
     let _us = get_time_us();
-    // unsafe {
-    //     *ts = TimeVal {
-    //         sec: us / 1_000_000,
-    //         usec: us % 1_000_000,
-    //     };
-    // }
+
+    let us = get_time_us();
+    let ts_phy_ptr = mm::translated_refmut(task::current_user_token(), ts);
+
+    *ts_phy_ptr = TimeVal {
+        sec: us / 1_000_000,
+        usec: us % 1_000_000,
+    };
+    
     0
 }
 
@@ -122,7 +125,7 @@ pub fn sys_task_info(ti: *mut TaskInfo) -> isize {
     -1
 }
 
-// YOUR JOB: 实现sys_set_priority，为任务添加优先级
+// YOUR JOB: 实现 sys_set_priority，为任务添加优先级
 pub fn sys_set_priority(_prio: isize) -> isize {
     -1
 }
