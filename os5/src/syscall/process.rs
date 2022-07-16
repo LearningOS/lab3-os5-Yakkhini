@@ -1,6 +1,6 @@
 //! Process management syscalls
 
-use crate::loader::get_app_data_by_name;
+use crate::loader::{get_app_data_by_name, self};
 use crate::mm::{translated_refmut, translated_str, self};
 use crate::task::{
     add_task, current_task, current_user_token, exit_current_and_run_next,
@@ -142,6 +142,14 @@ pub fn sys_munmap(start: usize, len: usize) -> isize {
 //
 // YOUR JOB: 实现 sys_spawn 系统调用
 // ALERT: 注意在实现 SPAWN 时不需要复制父进程地址空间，SPAWN != FORK + EXEC 
-pub fn sys_spawn(_path: *const u8) -> isize {
-    -1
+pub fn sys_spawn(path: *const u8) -> isize {
+    let token = task::current_user_token();
+    let app_name = mm::translated_str(token, path);
+    let data = loader::get_app_data_by_name(&app_name);
+
+    if let Some(data) = data {
+      return task::spawn(data);
+    } else {
+        return -1;
+    }
 }

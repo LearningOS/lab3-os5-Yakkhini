@@ -3,7 +3,6 @@
 //! It is only used to manage processes and schedule process based on ready queue.
 //! Other CPU process monitoring functions are in Processor.
 
-
 use super::TaskControlBlock;
 use crate::sync::UPSafeCell;
 use alloc::collections::VecDeque;
@@ -44,4 +43,12 @@ pub fn add_task(task: Arc<TaskControlBlock>) {
 
 pub fn fetch_task() -> Option<Arc<TaskControlBlock>> {
     TASK_MANAGER.exclusive_access().fetch()
+}
+
+/// Spawn a new task
+pub fn spawn(data:&[u8]) -> isize {
+    let task = Arc::new(TaskControlBlock::new(data));
+    add_task(task);
+
+    0
 }
