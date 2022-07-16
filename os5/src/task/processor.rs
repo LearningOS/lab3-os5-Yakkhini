@@ -117,7 +117,7 @@ pub fn mmap(start: usize, len: usize, port: usize) -> isize {
         mm::MapPermission::from_bits((port as u8) << 1).unwrap() | mm::MapPermission::U;
 
     for vpn in mm::VPNRange::new(mm::VirtPageNum::from(start_address), end_address.ceil()) {
-        if let Some(_) = take_current_task()
+        if let Some(_) = current_task()
             .unwrap()
             .inner_exclusive_access()
             .memory_set
@@ -127,14 +127,14 @@ pub fn mmap(start: usize, len: usize, port: usize) -> isize {
         };
     }
 
-    take_current_task()
+    current_task()
         .unwrap()
         .inner_exclusive_access()
         .memory_set
         .insert_framed_area(start_address, end_address, map_permission);
 
     for vpn in mm::VPNRange::new(mm::VirtPageNum::from(start_address), end_address.ceil()) {
-        if let None = take_current_task()
+        if let None = current_task()
             .unwrap()
             .inner_exclusive_access()
             .memory_set
