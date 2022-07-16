@@ -50,5 +50,7 @@ pub fn spawn(data:&[u8]) -> isize {
     let task = Arc::new(TaskControlBlock::new(data));
     add_task(task);
 
+    println!("[debug] Task added.");
+
     0
 }

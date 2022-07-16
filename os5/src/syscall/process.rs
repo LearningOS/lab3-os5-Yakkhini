@@ -145,11 +145,14 @@ pub fn sys_munmap(start: usize, len: usize) -> isize {
 pub fn sys_spawn(path: *const u8) -> isize {
     let token = task::current_user_token();
     let app_name = mm::translated_str(token, path);
-    let data = loader::get_app_data_by_name(&app_name);
+    let raw_data = loader::get_app_data_by_name(&app_name);
 
-    if let Some(data) = data {
+    println!("[debug] Data read finished.");
+
+    if let Some(data) = raw_data {
       return task::spawn(data);
     } else {
+        println!("[debug] There's no data!");
         return -1;
     }
 }
