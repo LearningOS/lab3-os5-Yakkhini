@@ -52,9 +52,10 @@ pub fn fetch_task() -> Option<Arc<TaskControlBlock>> {
 /// Spawn a new task
 pub fn spawn(data: &[u8]) -> isize {
     let task = Arc::new(TaskControlBlock::new(data));
+    let id = task.pid.0 as isize;
     add_task(task);
 
     println!("[debug] Task added.");
 
-    0
+    return id;
 }
