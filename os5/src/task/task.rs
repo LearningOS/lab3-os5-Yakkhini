@@ -42,7 +42,7 @@ pub struct TaskControlBlockInner {
     /// Set the priority of this process
     pub priority: u8,
     /// Maintain the stride of this process
-    pub stride: u8,
+    pub stride: usize,
     /// Parent process of the current process.
     /// Weak will not affect the reference count of the parent
     pub parent: Option<Weak<TaskControlBlock>>,

@@ -17,7 +17,7 @@ mod switch;
 #[allow(clippy::module_inception)]
 mod task;
 
-use crate::loader::get_app_data_by_name;
+use crate::{loader::get_app_data_by_name, config};
 use alloc::sync::Arc;
 use lazy_static::*;
 use manager::fetch_task;
@@ -39,6 +39,11 @@ pub fn suspend_current_and_run_next() {
 
     // ---- access current TCB exclusively
     let mut task_inner = task.inner_exclusive_access();
+    
+    // Decrease the stride.
+    // let priority = task_inner.priority as usize;
+    // task_inner.stride -= config::BIG_STRIDE as usize / priority ;
+    
     let task_cx_ptr = &mut task_inner.task_cx as *mut TaskContext;
     // Change status to Ready
     task_inner.task_status = TaskStatus::Ready;

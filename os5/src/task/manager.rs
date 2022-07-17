@@ -31,7 +31,7 @@ impl TaskManager {
         // FIFO
         // self.ready_queue.pop_front()
         // Stride 调度算法，每次从就绪队列中找到 stride 最小的进程进行调度
-        let mut min_stride: u8 = u8::MAX;
+        let mut min_stride: usize = usize::MAX;
         let mut idx = 0;
         for i in 0..self.ready_queue.len() {
             let task = &self.ready_queue[i];
@@ -54,7 +54,7 @@ impl TaskManager {
         let mut inner = task.inner_exclusive_access();
         
         let pass: u8 = config::BIG_STRIDE / inner.priority;
-        inner.stride += pass;
+        inner.stride += pass as usize;
         
         drop(inner);
         drop(task);
