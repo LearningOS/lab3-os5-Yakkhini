@@ -5,6 +5,7 @@
 
 use super::TaskControlBlock;
 use crate::sync::UPSafeCell;
+use crate::task;
 use alloc::collections::VecDeque;
 use alloc::sync::Arc;
 use lazy_static::*;
@@ -51,7 +52,8 @@ pub fn fetch_task() -> Option<Arc<TaskControlBlock>> {
 
 /// Spawn a new task
 pub fn spawn(data: &[u8]) -> isize {
-    let task = Arc::new(TaskControlBlock::new(data));
+    let current_task = task::current_task().unwrap();
+    let task = current_task.spawn(data);
     let id = task.pid.0 as isize;
     add_task(task);
 
