@@ -5,7 +5,7 @@
 
 use super::TaskControlBlock;
 use crate::sync::UPSafeCell;
-use crate::task;
+use crate::{config, task};
 use alloc::collections::VecDeque;
 use alloc::sync::Arc;
 use lazy_static::*;
@@ -24,15 +24,22 @@ impl TaskManager {
     }
     /// Add process back to ready queue
     pub fn add(&mut self, task: Arc<TaskControlBlock>) {
-        let idx = self.ready_queue.partition_point(|x| {
-            x.inner_exclusive_access().get_stride() <= task.inner_exclusive_access().get_stride()
-        });
-
-        self.ready_queue.insert(idx, task);
+        self.ready_queue.push_back(task);
     }
     /// Take a process out of the ready queue
     pub fn fetch(&mut self) -> Option<Arc<TaskControlBlock>> {
-        self.ready_queue.pop_front()
+        let task_enum = self
+            .ready_queue
+            .range(..)
+            .enumerate()
+            .min_by_key(|(_, x)| x.inner_exclusive_access().stride);
+        let task = task_enum.unwrap().1;
+        let index = task_enum.unwrap().0;
+
+        let pass = config::BIG_STRIDE / task.inner_exclusive_access().get_priority();
+        task.inner_exclusive_access().stride += pass;
+
+        self.ready_queue.remove(index)
     }
 }
 

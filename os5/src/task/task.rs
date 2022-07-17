@@ -75,10 +75,6 @@ impl TaskControlBlockInner {
     pub fn get_priority(&self) -> usize {
         self.priority
     }
-
-    pub fn get_stride(&self) -> usize {
-        self.stride
-    }
 }
 
 impl TaskControlBlock {
