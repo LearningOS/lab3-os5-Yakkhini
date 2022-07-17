@@ -212,7 +212,7 @@ pub fn set_priority(prio: isize) -> isize {
     if prio < 2 {
         return -1;
     } else {
-        current_task().unwrap().inner_exclusive_access().priority = prio as usize;
+        current_task().unwrap().inner_exclusive_access().priority = prio as u8;
 
         return prio;
     }

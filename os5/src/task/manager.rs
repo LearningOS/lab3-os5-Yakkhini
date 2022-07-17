@@ -28,18 +28,38 @@ impl TaskManager {
     }
     /// Take a process out of the ready queue
     pub fn fetch(&mut self) -> Option<Arc<TaskControlBlock>> {
-        let task_enum = self
-            .ready_queue
-            .range(..)
-            .enumerate()
-            .min_by_key(|(_, x)| x.inner_exclusive_access().stride);
-        let task = task_enum.unwrap().1;
-        let index = task_enum.unwrap().0;
+        // FIFO
+        // self.ready_queue.pop_front()
+        // Stride 调度算法，每次从就绪队列中找到 stride 最小的进程进行调度
+        let mut min_stride: u8 = u8::MAX;
+        let mut idx = 0;
+        for i in 0..self.ready_queue.len() {
+            let task = &self.ready_queue[i];
+            let inner = task.inner_exclusive_access();
+            if i == 0 {
+                min_stride = inner.stride;
+                idx = i;
+            } else {
+                let cmp: i8 = (inner.stride - min_stride) as i8;
+                if cmp < 0 {
+                    min_stride = inner.stride;
+                    idx = i;
+                }
+            }
+            drop(inner);
+            drop(task);
+        }
 
-        let pass = config::BIG_STRIDE / task.inner_exclusive_access().get_priority();
-        task.inner_exclusive_access().stride += pass;
+        let task = &self.ready_queue[idx];
+        let mut inner = task.inner_exclusive_access();
+        
+        let pass: u8 = config::BIG_STRIDE / inner.priority;
+        inner.stride += pass;
+        
+        drop(inner);
+        drop(task);
 
-        self.ready_queue.remove(index)
+        self.ready_queue.remove(idx)
     }
 }
 

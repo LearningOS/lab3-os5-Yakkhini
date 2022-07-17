@@ -107,8 +107,6 @@ pub fn sys_waitpid(pid: isize, exit_code_ptr: *mut i32) -> isize {
 
 // YOUR JOB: 引入虚地址后重写 sys_get_time
 pub fn sys_get_time(ts: *mut TimeVal, _tz: usize) -> isize {
-    let _us = get_time_us();
-
     let us = get_time_us();
     let ts_phy_ptr = mm::translated_refmut(task::current_user_token(), ts);
 
