@@ -23,7 +23,11 @@ impl TaskManager {
     }
     /// Add process back to ready queue
     pub fn add(&mut self, task: Arc<TaskControlBlock>) {
-        self.ready_queue.push_back(task);
+        let idx = self.ready_queue.partition_point(|x| {
+            x.inner_exclusive_access().get_stride() <= task.inner_exclusive_access().get_stride()
+        });
+
+        self.ready_queue.insert(idx, task);
     }
     /// Take a process out of the ready queue
     pub fn fetch(&mut self) -> Option<Arc<TaskControlBlock>> {
@@ -46,7 +50,7 @@ pub fn fetch_task() -> Option<Arc<TaskControlBlock>> {
 }
 
 /// Spawn a new task
-pub fn spawn(data:&[u8]) -> isize {
+pub fn spawn(data: &[u8]) -> isize {
     let task = Arc::new(TaskControlBlock::new(data));
     add_task(task);
 

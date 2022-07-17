@@ -39,6 +39,10 @@ pub struct TaskControlBlockInner {
     pub task_status: TaskStatus,
     /// Application address space
     pub memory_set: MemorySet,
+    /// Set the priority of this process
+    pub priority: usize,
+    /// Maintain the stride of this process
+    pub stride: usize,
     /// Parent process of the current process.
     /// Weak will not affect the reference count of the parent
     pub parent: Option<Weak<TaskControlBlock>>,
@@ -66,6 +70,14 @@ impl TaskControlBlockInner {
     }
     pub fn is_zombie(&self) -> bool {
         self.get_status() == TaskStatus::Zombie
+    }
+
+    pub fn get_priority(&self) -> usize {
+        self.priority
+    }
+
+    pub fn get_stride(&self) -> usize {
+        self.stride
     }
 }
 
@@ -100,6 +112,8 @@ impl TaskControlBlock {
                     task_cx: TaskContext::goto_trap_return(kernel_stack_top),
                     task_status: TaskStatus::Ready,
                     memory_set,
+                    priority: 16,
+                    stride: 0,
                     parent: None,
                     children: Vec::new(),
                     exit_code: 0,
@@ -167,6 +181,8 @@ impl TaskControlBlock {
                     task_cx: TaskContext::goto_trap_return(kernel_stack_top),
                     task_status: TaskStatus::Ready,
                     memory_set,
+                    priority: 16,
+                    stride: 0,
                     parent: Some(Arc::downgrade(self)),
                     children: Vec::new(),
                     exit_code: 0,

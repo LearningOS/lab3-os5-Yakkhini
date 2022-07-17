@@ -53,6 +53,10 @@ pub fn run_tasks() {
         let mut processor = PROCESSOR.exclusive_access();
         if let Some(task) = fetch_task() {
             let idle_task_cx_ptr = processor.get_idle_task_cx_ptr();
+            if let Some(tcb) = processor.current() {
+                let pass = config::BIG_STRIDE / tcb.inner_exclusive_access().get_priority();
+                tcb.inner_exclusive_access().stride += pass;
+            }
             // access coming task TCB exclusively
             let mut task_inner = task.inner_exclusive_access();
             let next_task_cx_ptr = &task_inner.task_cx as *const TaskContext;
@@ -173,7 +177,7 @@ pub fn munmap(start: usize, len: usize) -> isize {
             .translate(vpn)
         {
             Some(pte) => {
-                if pte.is_valid() {
+                if pte.is_valid() == false {
                     return -1;
                 }
             }
